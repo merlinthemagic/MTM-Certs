@@ -1,0 +1,30 @@
+{
+	"name" : "merlinthemagic/mtm-certs",
+	"type" : "library",
+	"description" : "Certificate tools for PHP 7",
+	"version" : "0.0.1",
+	"keywords" : [
+		"rsa",
+		"ecc"
+	],
+	"homepage" : "https://github.com/merlinthemagic/MTM-Certs",
+	"license" : "LGPL-3.0",
+	"authors" : [{
+			"name" : "Martin Peter Madsen",
+			"email" : "dev@martinpetermadsen.com",
+			"role" : "Developer"
+		}
+	],
+	"require" : {
+		"php" : ">=7.3.0",
+		"merlinthemagic/mtm-utilities" : ">=0.0.1",
+		"merlinthemagic/mtm-encrypt" : ">=0.0.1",
+		"merlinthemagic/mtm-fs" : ">=0.0.1"
+	},
+	"autoload" : {
+		"files" : [
+			"./Enable.php"
+		]
+	},
+	"minimum-stability" : "dev"
+}
