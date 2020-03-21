@@ -115,4 +115,22 @@ class CRT
 			throw $e;
 		}
 	}
+	public function x509ToPkcs12($crtObj, $password=null)
+	{
+		if ($crtObj instanceof \MTM\Certs\Models\CRT === false) {
+			throw new \Exception("Invalid input");
+		} elseif ($crtObj->getParent() !== null) {
+			//can be done, just have no need currently: https://www.php.net/manual/en/function.openssl-pkcs12-export.php
+			throw new \Exception("Cannot handle parent certs");
+		}
+		$x509Res	= openssl_x509_read($crtObj->get());
+		if (is_resource($x509Res) === false) {
+			throw new \Exception("Failed to get certificate resource");
+		}
+		$valid		= openssl_pkcs12_export($x509Res, $pkcs, array($crtObj->getPrivateKey()->get(), $crtObj->getPrivateKey()->getPassPhrase()), $password);
+		if ($valid !== true) {
+			throw new \Exception("Failed to export as PKCS#12");
+		}
+		return \MTM\Certs\Factories::getCerts()->getPKCS12(base64_encode($pkcs), $password);
+	}
 }

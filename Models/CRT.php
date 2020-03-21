@@ -5,7 +5,8 @@ namespace MTM\Certs\Models;
 class CRT extends Base
 {
 	//Generic Certificate
-	private $_pKey=null;
+	protected $_pKey=null;
+	protected $_toolObj=null;
 	
 	public function setPrivateKey($keyObj)
 	{
@@ -16,5 +17,17 @@ class CRT extends Base
 	{
 		return $this->_pKey;
 	}
-
+	public function getAsPkcs12($password=null)
+	{
+		return $this->getTool()->x509ToPkcs12($this, $password);
+	}
+	public function setTool($obj)
+	{
+		$this->_toolObj	= $obj;
+		return $this;
+	}
+	public function getTool()
+	{
+		return $this->_toolObj;
+	}
 }

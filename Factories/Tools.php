@@ -4,6 +4,8 @@ namespace MTM\Certs\Factories;
 
 class Tools extends Base
 {
+	//use: $toolObj	= \MTM\Certs\Factories::getTools()->__METHOD__();
+	
 	public function getCsr()
 	{
 		if (array_key_exists(__FUNCTION__, $this->_cStore) === false) {
