@@ -133,4 +133,47 @@ class CRT
 		}
 		return \MTM\Certs\Factories::getCerts()->getPKCS12(base64_encode($pkcs), $password);
 	}
+	public function getDetail($crtObj)
+	{
+		$d	= openssl_x509_parse($crtObj->get(), true);
+		if (is_array($d) === true && array_key_exists("serialNumber", $d) === true) {
+			
+			//append as needed, there is alot of data 
+			$rObj				= new \stdClass();
+			$rObj->serial		= $d["serialNumber"];
+			$rObj->commonName	= null;
+			$rObj->country		= null;
+			$rObj->state		= null;
+			$rObj->city			= null;
+			$rObj->orgName		= null;
+			$rObj->orgUnit		= null;
+			
+			if (array_key_exists("subject", $d) === true && is_array($d["subject"]) === true ) {
+				$s		= $d["subject"];
+				if (array_key_exists("CN", $s) === true) {
+					$rObj->commonName	= $s["CN"];
+				}
+				if (array_key_exists("C", $s) === true) {
+					$rObj->country		= $s["C"];
+				}
+				if (array_key_exists("ST", $s) === true) {
+					$rObj->state		= $s["ST"];
+				}
+				if (array_key_exists("L", $s) === true) {
+					$rObj->city			= $s["L"];
+				}
+				if (array_key_exists("O", $s) === true) {
+					$rObj->orgName		= $s["O"];
+				}
+				if (array_key_exists("OU", $s) === true) {
+					$rObj->orgUnit		= $s["OU"];
+				}
+			}
+			
+			return $rObj;
+			
+		} else {
+			throw new \Exception("Failed to get details, maybe not a valid certificate, or maybe protected");
+		}
+	}
 }

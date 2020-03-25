@@ -21,6 +21,10 @@ class CRT extends Base
 	{
 		return $this->getTool()->x509ToPkcs12($this, $password);
 	}
+	public function getSerialNumber()
+	{
+		return $this->getTool()->getDetail($this)->serial;
+	}
 	public function setTool($obj)
 	{
 		$this->_toolObj	= $obj;
