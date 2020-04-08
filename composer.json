@@ -2,7 +2,7 @@
 	"name" : "merlinthemagic/mtm-certs",
 	"type" : "library",
 	"description" : "Certificate tools for PHP 7",
-	"version" : "0.0.2",
+	"version" : "0.0.3",
 	"keywords" : [
 		"rsa",
 		"ecc"

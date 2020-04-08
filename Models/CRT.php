@@ -25,6 +25,20 @@ class CRT extends Base
 	{
 		return $this->getTool()->getDetail($this)->serial;
 	}
+	public function validateKey($throw=false)
+	{
+		$keyObj	= $this->getPrivateKey();
+		if ($keyObj !== null) {
+			$bool	= $this->getTool()->validateKey($this, $keyObj);
+			if ($bool === true || $throw === false) {
+				return $bool;
+			} else {
+				throw new \Exception("Key is invalid");
+			}
+		} else {
+			throw new \Exception("No key set, cannot validate");
+		}
+	}
 	public function setTool($obj)
 	{
 		$this->_toolObj	= $obj;

@@ -176,4 +176,15 @@ class CRT
 			throw new \Exception("Failed to get details, maybe not a valid certificate, or maybe protected");
 		}
 	}
+	public function validateKey($crtObj, $keyObj)
+	{
+		$valid = openssl_x509_check_private_key($crtObj->get(), array($keyObj->get(), $keyObj->getPassPhrase()));
+		if ($valid === true) {
+			return true;
+		} elseif ($valid === false) {
+			return false;
+		} else {
+			throw new \Exception("Failed to validate key");
+		}
+	}
 }
