@@ -32,6 +32,7 @@ class Certs extends Base
 	public function getCA($str=null, $key=null)
 	{
 		$rObj	= new \MTM\Certs\Models\CA();
+		$rObj->setTool(\MTM\Certs\Factories::getTools()->getCrt());
 		if ($str !== null) {
 			$rObj->set($str);
 		}

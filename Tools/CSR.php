@@ -6,6 +6,10 @@ class CSR
 {
 	public function get($keyObj=null, $commonName=null, $orgName=null, $orgUnit=null, $country=null, $state=null, $local=null, $email=null, $format="pem")
 	{
+		if (strlen($commonName) > 64) {
+			throw new \Exception("Common Name cannot be more than 64 chars");
+		}
+		
 		$lines		= \MTM\Certs\Factories::getTools()->getOpenSsl()->getCSR($commonName, $orgName, $orgUnit, $country, $state, $local, $email);
 		$tmpFile	= \MTM\FS\Factories::getFiles()->getTempFile("cnf");
 		$tmpFile->setContent(implode("\n", $lines));
