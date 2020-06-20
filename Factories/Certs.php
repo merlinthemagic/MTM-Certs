@@ -6,38 +6,50 @@ class Certs extends Base
 {
 	//use: $certObj	= \MTM\Certs\Factories::getCerts()->__METHOD__();
 	
-	public function getCSR($str=null, $key=null)
+	public function getCSR($str=null, $keyObj=null)
 	{
 		$rObj	= new \MTM\Certs\Models\CSR();
 		if ($str !== null) {
 			$rObj->set($str);
 		}
-		if ($key !== null) {
-			$rObj->setPrivateKey($key);
+		if ($keyObj !== null) {
+			if (is_object($keyObj) === true) {
+				$rObj->setPrivateKey($keyObj);
+			} else {
+				throw new \Exception("Key must be object");
+			}
 		}
 		return $rObj;
 	}
-	public function getCRT($str=null, $key=null)
+	public function getCRT($str=null, $keyObj=null)
 	{
 		$rObj	= new \MTM\Certs\Models\CRT();
 		$rObj->setTool(\MTM\Certs\Factories::getTools()->getCrt());
 		if ($str !== null) {
 			$rObj->set($str);
 		}
-		if ($key !== null) {
-			$rObj->setPrivateKey($key);
+		if ($keyObj !== null) {
+			if (is_object($keyObj) === true) {
+				$rObj->setPrivateKey($keyObj);
+			} else {
+				throw new \Exception("Key must be object");	
+			}
 		}
 		return $rObj;
 	}
-	public function getCA($str=null, $key=null)
+	public function getCA($str=null, $keyObj=null)
 	{
 		$rObj	= new \MTM\Certs\Models\CA();
 		$rObj->setTool(\MTM\Certs\Factories::getTools()->getCrt());
 		if ($str !== null) {
 			$rObj->set($str);
 		}
-		if ($key !== null) {
-			$rObj->setPrivateKey($key);
+		if ($keyObj !== null) {
+			if (is_object($keyObj) === true) {
+				$rObj->setPrivateKey($keyObj);
+			} else {
+				throw new \Exception("Key must be object");
+			}
 		}
 		return $rObj;
 	}
