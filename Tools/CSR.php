@@ -41,6 +41,51 @@ class CSR
 			throw $e;
 		}
 	}
+	public function getDetail($csrObj)
+	{
+		$detail	  = openssl_csr_get_subject($csrObj->get());
+		if ($detail === false) {
+			throw new \Exception("Failed to extract details for CSR");
+		}
+		$pubRes	= openssl_csr_get_public_key($csrObj->get());
+		if ($pubRes === false) {
+			throw new \Exception("Failed to extract public key for CSR");
+		}
+		$pubKey	= openssl_pkey_get_details($pubRes);
+		if (isset($pubKey["key"]) === false || strlen($pubKey["key"]) < 1) {
+			throw new \Exception("Failed to extract public key");
+		}
+
+		$rObj				= new \stdClass();
+		$rObj->commonName	= null;
+		$rObj->country		= null;
+		$rObj->state		= null;
+		$rObj->city			= null;
+		$rObj->orgName		= null;
+		$rObj->orgUnit		= null;
+		$rObj->pubKey		= $pubKey["key"];
+		
+		if (isset($detail["CN"]) !== false) {
+			$rObj->commonName	= $detail["CN"];
+		}
+		if (isset($detail["C"]) !== false) {
+			$rObj->country	= $detail["C"];
+		}
+		if (isset($detail["ST"]) !== false) {
+			$rObj->state	= $detail["ST"];
+		}
+		if (isset($detail["L"]) !== false) {
+			$rObj->city	= $detail["L"];
+		}
+		if (isset($detail["O"]) !== false) {
+			$rObj->orgName	= $detail["O"];
+		}
+		if (isset($detail["OU"]) !== false) {
+			$rObj->orgUnit	= $detail["OU"];
+		}
+		
+		return $rObj;
+	}
 	public function getTest()
 	{
 		$keyObj		= \MTM\Encrypt\Factories::getRSA()->getTool()->createPrivateKey(4096);

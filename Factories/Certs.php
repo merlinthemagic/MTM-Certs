@@ -9,6 +9,7 @@ class Certs extends Base
 	public function getCSR($str=null, $keyObj=null)
 	{
 		$rObj	= new \MTM\Certs\Models\CSR();
+		$rObj->setTool(\MTM\Certs\Factories::getTools()->getCsr());
 		if ($str !== null) {
 			$rObj->set($str);
 		}
