@@ -139,14 +139,24 @@ class CRT
 		if (is_array($d) === true && array_key_exists("serialNumber", $d) === true) {
 			
 			//append as needed, there is alot of data 
-			$rObj				= new \stdClass();
-			$rObj->serial		= $d["serialNumber"];
-			$rObj->commonName	= null;
-			$rObj->country		= null;
-			$rObj->state		= null;
-			$rObj->city			= null;
-			$rObj->orgName		= null;
-			$rObj->orgUnit		= null;
+			$rObj					= new \stdClass();
+			$rObj->serial			= $d["serialNumber"];
+			$rObj->commonName		= null;
+			$rObj->country			= null;
+			$rObj->state			= null;
+			$rObj->city				= null;
+			$rObj->orgName			= null;
+			$rObj->orgUnit			= null;
+			$rObj->emailAddress		= null;
+			$rObj->validFrom		= null;
+			$rObj->validTo			= null;
+			$rObj->altDns			= array();
+			$rObj->isCA				= null;
+			$rObj->isRoot			= null;
+			$rObj->isServer			= null;
+			$rObj->isClient			= null;
+			$rObj->subKey			= null;
+			$rObj->authKey			= null;
 			
 			if (array_key_exists("subject", $d) === true && is_array($d["subject"]) === true ) {
 				$s		= $d["subject"];
@@ -168,8 +178,71 @@ class CRT
 				if (array_key_exists("OU", $s) === true) {
 					$rObj->orgUnit		= $s["OU"];
 				}
+				if (array_key_exists("emailAddress", $s) === true) {
+					$rObj->emailAddress	= $s["emailAddress"];
+				}
 			}
 			
+			if (array_key_exists("validFrom_time_t", $d) === true && is_int($d["validFrom_time_t"]) === true ) {
+				$rObj->validFrom	= $d["validFrom_time_t"];
+			}
+			if (array_key_exists("validTo_time_t", $d) === true && is_int($d["validTo_time_t"]) === true ) {
+				$rObj->validTo		= $d["validTo_time_t"];
+			}
+			
+			if (array_key_exists("extensions", $d) === true && is_array($d["extensions"]) === true) {
+				$e		= $d["extensions"];
+				
+				if (array_key_exists("subjectKeyIdentifier", $e) === true && is_string($e["subjectKeyIdentifier"]) === true) {
+					$rObj->subKey			= trim($e["subjectKeyIdentifier"]);
+				}
+				if (array_key_exists("authorityKeyIdentifier", $e) === true && is_string($e["authorityKeyIdentifier"]) === true) {
+					$rObj->authKey			= trim($e["authorityKeyIdentifier"]);
+					$keyStart				= strpos($rObj->authKey, "keyid:");
+					if ($keyStart === 0) {
+						$rObj->authKey		= trim(substr($rObj->authKey, 6));
+						$keyEnd				= strpos($rObj->authKey, "\n");
+						if ($keyEnd !== false) {
+							$rObj->authKey		= trim(substr($rObj->authKey, 0, $keyEnd));
+						}
+					}
+				}
+				if ($rObj->authKey !== null && $rObj->subKey !== null) {
+					if ($rObj->authKey === $rObj->subKey) {
+						$rObj->isRoot			= true;
+					} else {
+						$rObj->isRoot			= false;
+					}
+				}
+				if (array_key_exists("basicConstraints", $e) === true && is_string($e["basicConstraints"]) === true) {
+					if (strpos($e["basicConstraints"], "CA:TRUE") !== false) {
+						$rObj->isCA			= true;
+					} elseif (strpos($e["basicConstraints"], "CA:FALSE") !== false) {
+						$rObj->isCA			= false;
+					}
+				}
+				
+				if (array_key_exists("extendedKeyUsage", $e) === true && is_string($e["extendedKeyUsage"]) === true) {
+					if (strpos($e["extendedKeyUsage"], "TLS Web Server Authentication") !== false) {
+						$rObj->isServer		= true;
+					} else {
+						$rObj->isServer		= false;
+					}
+					if (strpos($e["extendedKeyUsage"], "TLS Web Client Authentication") !== false) {
+						$rObj->isClient		= true;
+					} else {
+						$rObj->isClient		= false;
+					}
+				}
+
+				if (array_key_exists("subjectAltName", $e) === true && is_string($e["subjectAltName"]) === true) {
+					$alts		= array_map("trim", array_filter(explode("DNS:", $e["subjectAltName"])));
+					foreach ($alts as $alt) {
+						$rObj->altDns[]	= rtrim($alt, ",");
+					}
+				}
+			}
+
 			return $rObj;
 			
 		} else {

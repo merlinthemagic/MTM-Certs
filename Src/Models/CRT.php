@@ -23,7 +23,11 @@ class CRT extends Base
 	}
 	public function getSerialNumber()
 	{
-		return $this->getTool()->getDetail($this)->serial;
+		return $this->getDetail()->serial;
+	}
+	public function getDetail()
+	{
+		return $this->getTool()->getDetail($this);
 	}
 	public function validateKey($throw=false)
 	{

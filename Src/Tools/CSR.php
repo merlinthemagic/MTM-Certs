@@ -63,6 +63,7 @@ class CSR
 		$rObj->city			= null;
 		$rObj->orgName		= null;
 		$rObj->orgUnit		= null;
+		$rObj->emailAddress	= null;
 		$rObj->pubKey		= $pubKey["key"];
 		
 		if (isset($detail["CN"]) !== false) {
@@ -83,7 +84,9 @@ class CSR
 		if (isset($detail["OU"]) !== false) {
 			$rObj->orgUnit	= $detail["OU"];
 		}
-		
+		if (isset($detail["emailAddress"]) !== false) {
+			$rObj->emailAddress	= $detail["emailAddress"];
+		}
 		return $rObj;
 	}
 	public function getTest()
