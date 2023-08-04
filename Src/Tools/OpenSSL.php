@@ -1,5 +1,5 @@
 <?php
-//© 2019 Martin Peter Madsen
+//ï¿½ 2019 Martin Peter Madsen
 namespace MTM\Certs\Tools;
 
 //src: https://jamielinux.com/docs/openssl-certificate-authority/appendix/root-configuration-file.html
@@ -72,6 +72,24 @@ class OpenSSL
 			$altGrp		= "alt_names";
 			$segs[]		= $this->getAltNames($altGrp, $altDns);
 		}
+		$segs[]		= $this->getClientX509($altGrp);
+		
+		return $this->stitchSegments($segs);
+	}
+	public function getServerAndClient($altDns=array())
+	{
+		$pName		= "policy_loose";
+		$segs		= array();
+		$segs[]		= $this->getPolicy("loose", $pName);
+		$segs[]		= $this->getCaMinimal();
+		$segs[]		= $this->getCaDefault($pName);
+		
+		$altGrp	= null;
+		if (count($altDns) > 0) {
+			$altGrp		= "alt_names";
+			$segs[]		= $this->getAltNames($altGrp, $altDns);
+		}
+		$segs[]		= $this->getServerX509($altGrp);
 		$segs[]		= $this->getClientX509($altGrp);
 		
 		return $this->stitchSegments($segs);
