@@ -4,7 +4,7 @@ namespace MTM\Certs\Tools;
 
 class CRT
 {
-	public function getCA($csrObj, $validDays=7300)
+	public function getCA($csrObj, $validDays=7300, $hashAlgo="sha256")
 	{
 		$lines		= \MTM\Certs\Factories::getTools()->getOpenSsl()->getCA();
 		$tmpFile	= \MTM\FS\Factories::getFiles()->getTempFile("cnf");
@@ -12,13 +12,16 @@ class CRT
 		
 		try {
 			$serial		= str_replace(".", "",  \MTM\Utilities\Factories::getTime()->getMicroEpoch());
-			$x509Res	= openssl_csr_sign($csrObj->get(), null, array($csrObj->getPrivateKey()->get(), $csrObj->getPrivateKey()->getPassPhrase()), $validDays, array("config" => $tmpFile->getPathAsString(), "x509_extensions" => "v3_ca", "digest_alg" => "sha256"), $serial);
-			if (is_resource($x509Res) === false) {
-				throw new \Exception("Failed to sign CSR");
+			$rData		= openssl_csr_sign($csrObj->get(), null, array($csrObj->getPrivateKey()->get(), $csrObj->getPrivateKey()->getPassPhrase()), $validDays, array("config" => $tmpFile->getPathAsString(), "x509_extensions" => "v3_ca", "digest_alg" => $hashAlgo), $serial);
+			if (
+				$rData instanceof \OpenSSLCertificate === false
+				&& is_resource($rData) === false
+			) {
+				throw new \Exception("Failed to sign certificate", 5555);
 			}
-			$valid	= @openssl_x509_export($x509Res, $certStr);
+			$valid	= @openssl_x509_export($rData, $certStr);
 			if ($valid !== true) {
-				throw new \Exception("Failed to export Signed CSR");
+				throw new \Exception("Failed to export signed certificate", 5555);
 			}
 			
 			$tmpFile->delete();
@@ -29,7 +32,7 @@ class CRT
 			throw $e;
 		}
 	}
-	public function getIntermediateCA($csrObj, $caObj, $validDays=7300)
+	public function getIntermediateCA($csrObj, $caObj, $validDays=7300, $hashAlgo="sha256")
 	{
 		$lines		= \MTM\Certs\Factories::getTools()->getOpenSsl()->getIntermediate();
 		$tmpFile	= \MTM\FS\Factories::getFiles()->getTempFile("cnf");
@@ -37,13 +40,16 @@ class CRT
 		
 		try {
 			$serial		= str_replace(".", "",  \MTM\Utilities\Factories::getTime()->getMicroEpoch());
-			$x509Res	= openssl_csr_sign($csrObj->get(), $caObj->get(), array($caObj->getPrivateKey()->get(), $caObj->getPrivateKey()->getPassPhrase()), $validDays, array("config" => $tmpFile->getPathAsString(), "x509_extensions" => "v3_intermediate_ca", "digest_alg" => "sha256"), $serial);
-			if (is_resource($x509Res) === false) {
-				throw new \Exception("Failed to sign CSR");
+			$rData		= openssl_csr_sign($csrObj->get(), $caObj->get(), array($caObj->getPrivateKey()->get(), $caObj->getPrivateKey()->getPassPhrase()), $validDays, array("config" => $tmpFile->getPathAsString(), "x509_extensions" => "v3_intermediate_ca", "digest_alg" => $hashAlgo), $serial);
+			if (
+				$rData instanceof \OpenSSLCertificate === false
+				&& is_resource($rData) === false
+			) {
+				throw new \Exception("Failed to sign certificate", 5555);
 			}
-			$valid	= @openssl_x509_export($x509Res, $certStr);
+			$valid	= @openssl_x509_export($rData, $certStr);
 			if ($valid !== true) {
-				throw new \Exception("Failed to export Signed CSR");
+				throw new \Exception("Failed to export signed certificate", 5555);
 			}
 			
 			$tmpFile->delete();
@@ -54,7 +60,7 @@ class CRT
 			throw $e;
 		}
 	}
-	public function getServerCRT($csrObj, $caObj, $validDays=365, $altDns=array())
+	public function getServerCRT($csrObj, $caObj, $validDays=365, $altDns=array(), $hashAlgo="sha256")
 	{
 		$detail		= openssl_csr_get_subject($csrObj->get());
 		//common name must be included in the alt DNS as the first item
@@ -67,13 +73,16 @@ class CRT
 
 		try {
 			$serial		= str_replace(".", "",  \MTM\Utilities\Factories::getTime()->getMicroEpoch(false));
-			$x509Res	= openssl_csr_sign($csrObj->get(), $caObj->get(), array($caObj->getPrivateKey()->get(), $caObj->getPrivateKey()->getPassPhrase()), $validDays, array("config" => $tmpFile->getPathAsString(), "x509_extensions" => "server_cert", "digest_alg" => "sha256"), $serial);
-			if (is_resource($x509Res) === false) {
-				throw new \Exception("Failed to sign CSR");
+			$rData		= openssl_csr_sign($csrObj->get(), $caObj->get(), array($caObj->getPrivateKey()->get(), $caObj->getPrivateKey()->getPassPhrase()), $validDays, array("config" => $tmpFile->getPathAsString(), "x509_extensions" => "server_cert", "digest_alg" => $hashAlgo), $serial);
+			if (
+				$rData instanceof \OpenSSLCertificate === false
+				&& is_resource($rData) === false
+			) {
+				throw new \Exception("Failed to sign certificate", 5555);
 			}
-			$valid	= @openssl_x509_export($x509Res, $certStr);
+			$valid	= @openssl_x509_export($rData, $certStr);
 			if ($valid !== true) {
-				throw new \Exception("Failed to export Signed CSR");
+				throw new \Exception("Failed to export signed certificate", 5555);
 			}
 			
 			$tmpFile->delete();
@@ -84,7 +93,7 @@ class CRT
 			throw $e;
 		}
 	}
-	public function getClientCRT($csrObj, $caObj, $validDays=365, $altDns=array())
+	public function getClientCRT($csrObj, $caObj, $validDays=365, $altDns=array(), $hashAlgo="sha256")
 	{
 		$detail		= openssl_csr_get_subject($csrObj->get());
 		//common name must be included in the alt DNS as the first item
@@ -98,13 +107,16 @@ class CRT
 		try {
 			
 			$serial		= str_replace(".", "",  \MTM\Utilities\Factories::getTime()->getMicroEpoch(false));
-			$x509Res	= openssl_csr_sign($csrObj->get(), $caObj->get(), array($caObj->getPrivateKey()->get(), $caObj->getPrivateKey()->getPassPhrase()), $validDays, array("config" => $tmpFile->getPathAsString(), "x509_extensions" => "client_cert", "digest_alg" => "sha256"), $serial);
-			if (is_resource($x509Res) === false) {
-				throw new \Exception("Failed to sign CSR");
+			$rData		= openssl_csr_sign($csrObj->get(), $caObj->get(), array($caObj->getPrivateKey()->get(), $caObj->getPrivateKey()->getPassPhrase()), $validDays, array("config" => $tmpFile->getPathAsString(), "x509_extensions" => "client_cert", "digest_alg" => $hashAlgo), $serial);
+			if (
+				$rData instanceof \OpenSSLCertificate === false
+				&& is_resource($rData) === false
+			) {
+				throw new \Exception("Failed to sign certificate", 5555);
 			}
-			$valid	= @openssl_x509_export($x509Res, $certStr);
+			$valid	= @openssl_x509_export($rData, $certStr);
 			if ($valid !== true) {
-				throw new \Exception("Failed to export Signed CSR");
+				throw new \Exception("Failed to export signed certificate", 5555);
 			}
 			
 			$tmpFile->delete();
@@ -115,7 +127,7 @@ class CRT
 			throw $e;
 		}
 	}
-	public function getServerAndClientCRT($csrObj, $caObj, $validDays=365, $altDns=array())
+	public function getServerAndClientCRT($csrObj, $caObj, $validDays=365, $altDns=array(), $hashAlgo="sha256")
 	{
 		$detail		= openssl_csr_get_subject($csrObj->get());
 		//common name must be included in the alt DNS as the first item
@@ -129,13 +141,16 @@ class CRT
 		try {
 			
 			$serial		= str_replace(".", "",  \MTM\Utilities\Factories::getTime()->getMicroEpoch(false));
-			$x509Res	= openssl_csr_sign($csrObj->get(), $caObj->get(), array($caObj->getPrivateKey()->get(), $caObj->getPrivateKey()->getPassPhrase()), $validDays, array("config" => $tmpFile->getPathAsString(), "x509_extensions" => "client_cert", "digest_alg" => "sha256"), $serial);
-			if (is_resource($x509Res) === false) {
-				throw new \Exception("Failed to sign CSR");
+			$rData		= openssl_csr_sign($csrObj->get(), $caObj->get(), array($caObj->getPrivateKey()->get(), $caObj->getPrivateKey()->getPassPhrase()), $validDays, array("config" => $tmpFile->getPathAsString(), "x509_extensions" => "client_cert", "digest_alg" => $hashAlgo), $serial);
+			if (
+				$rData instanceof \OpenSSLCertificate === false
+				&& is_resource($rData) === false
+			) {
+				throw new \Exception("Failed to sign certificate", 5555);
 			}
-			$valid	= @openssl_x509_export($x509Res, $certStr);
+			$valid	= @openssl_x509_export($rData, $certStr);
 			if ($valid !== true) {
-				throw new \Exception("Failed to export Signed CSR");
+				throw new \Exception("Failed to export signed certificate", 5555);
 			}
 			
 			$tmpFile->delete();
@@ -154,11 +169,14 @@ class CRT
 			//can be done, just have no need currently: https://www.php.net/manual/en/function.openssl-pkcs12-export.php
 			throw new \Exception("Cannot handle parent certs");
 		}
-		$x509Res	= openssl_x509_read($crtObj->get());
-		if (is_resource($x509Res) === false) {
-			throw new \Exception("Failed to get certificate resource");
+		$rData	= openssl_x509_read($crtObj->get());
+		if (
+			$rData instanceof \OpenSSLCertificate === false
+			&& is_resource($rData) === false
+		) {
+			throw new \Exception("Failed to sign certificate", 5555);
 		}
-		$valid		= openssl_pkcs12_export($x509Res, $pkcs, array($crtObj->getPrivateKey()->get(), $crtObj->getPrivateKey()->getPassPhrase()), $password);
+		$valid		= openssl_pkcs12_export($rData, $pkcs, array($crtObj->getPrivateKey()->get(), $crtObj->getPrivateKey()->getPassPhrase()), $password);
 		if ($valid !== true) {
 			throw new \Exception("Failed to export as PKCS#12");
 		}
