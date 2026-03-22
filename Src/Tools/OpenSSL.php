@@ -89,8 +89,7 @@ class OpenSSL
 			$altGrp		= "alt_names";
 			$segs[]		= $this->getAltNames($altGrp, $altDns);
 		}
-		$segs[]		= $this->getServerX509($altGrp);
-		$segs[]		= $this->getClientX509($altGrp);
+		$segs[]		= $this->getServerClientX509($altGrp);
 		
 		return $this->stitchSegments($segs);
 	}
@@ -227,6 +226,22 @@ class OpenSSL
 		$lines[]	= "authorityKeyIdentifier			= keyid,issuer";
 		$lines[]	= "keyUsage							= critical, nonRepudiation, digitalSignature, keyEncipherment";
 		$lines[]	= "extendedKeyUsage					= clientAuth, emailProtection";
+		if ($altGrpName !== null) {
+			$lines[]	= "subjectAltName					= @" . $altGrpName;
+		}
+		
+		return $lines;
+	}
+	private function getServerClientX509($altGrpName=null)
+	{
+		$lines[]	= "[ client_cert ]";
+		$lines[]	= "basicConstraints					= CA:FALSE";
+		$lines[]	= "nsCertType						= server, client";
+		$lines[]	= "nsComment						= \"MTM Server/Client Certificate\"";
+		$lines[]	= "subjectKeyIdentifier				= hash";
+		$lines[]	= "authorityKeyIdentifier			= keyid,issuer:always";
+		$lines[]	= "keyUsage							= critical, nonRepudiation, digitalSignature, keyEncipherment";
+		$lines[]	= "extendedKeyUsage					= serverAuth, clientAuth, emailProtection";
 		if ($altGrpName !== null) {
 			$lines[]	= "subjectAltName					= @" . $altGrpName;
 		}
