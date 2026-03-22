@@ -1,5 +1,5 @@
 <?php
-//© 2018 Martin Madsen
+//ï¿½ 2018 Martin Madsen
 namespace MTM\Certs\Tools;
 
 class CSR
@@ -7,7 +7,7 @@ class CSR
 	public function get($keyObj=null, $commonName=null, $orgName=null, $orgUnit=null, $country=null, $state=null, $local=null, $email=null, $format="pem")
 	{
 		if (strlen($commonName) > 64) {
-			throw new \Exception("Common Name cannot be more than 64 chars");
+			throw new \Exception("Common Name cannot be more than 64 chars", 5555);
 		}
 		
 		$lines		= \MTM\Certs\Factories::getTools()->getOpenSsl()->getCSR($commonName, $orgName, $orgUnit, $country, $state, $local, $email);
@@ -18,19 +18,21 @@ class CSR
 			
 			//create the CSR
 			$keyRes		= openssl_pkey_get_private($keyObj->get(), $keyObj->getPassPhrase());//pass by ref only
-			$certRes	= openssl_csr_new(array(), $keyRes, array("config" => $tmpFile->getPathAsString(), "x509_extensions" => "v3_req"));
-	
-			if (is_resource($certRes) === false) {
-				throw new \Exception("Failed to generate CSR");
+			$rData		= openssl_csr_new(array(), $keyRes, array("config" => $tmpFile->getPathAsString(), "x509_extensions" => "v3_req"));
+			if (
+				$rData instanceof \OpenSSLCertificateSigningRequest === false
+				&& is_resource($rData) === false
+			) {
+				throw new \Exception("Failed to generate CSR", 5555);
 			}
 			
 			if ($format == "pem") {
-				$valid	= openssl_csr_export($certRes, $certStr);
+				$valid	= openssl_csr_export($rData, $certStr);
 				if ($valid !== true) {
-					throw new \Exception("Failed to export CSR as PEM");
+					throw new \Exception("Failed to export CSR as PEM", 5555);
 				}
 			} else {
-				throw new \Exception("Invalid format: " . $format);
+				throw new \Exception("Invalid format: " . $format, 5555);
 			}
 		
 			$tmpFile->delete();
@@ -45,11 +47,11 @@ class CSR
 	{
 		$detail	  = openssl_csr_get_subject($csrObj->get());
 		if ($detail === false) {
-			throw new \Exception("Failed to extract details for CSR");
+			throw new \Exception("Failed to extract details for CSR", 5555);
 		}
 		$pubRes	= openssl_csr_get_public_key($csrObj->get());
 		if ($pubRes === false) {
-			throw new \Exception("Failed to extract public key for CSR");
+			throw new \Exception("Failed to extract public key for CSR", 5555);
 		}
 		$pubKey	= openssl_pkey_get_details($pubRes);
 		if (isset($pubKey["key"]) === false || strlen($pubKey["key"]) < 1) {
